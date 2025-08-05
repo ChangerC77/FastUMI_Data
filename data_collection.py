@@ -35,20 +35,20 @@ if torch.cuda.is_available():
 else:
     device = 'cpu'
 
-ROBOT_TYPE = config['device_settings']["robot_type"]
+ROBOT_TYPE = config['device_settings']["robot_type"] # XARM6
 TASK_CONFIG = config['task_config']
 
 
 # Parse command line arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('--task', type=str, default="test3")  # open_lid, open_fridge, open_drawer, pick_place_pot
+parser.add_argument('--task', type=str, default="task1")  # open_lid, open_fridge, open_drawer, pick_place_pot
 parser.add_argument('--num_episodes', type=int, default=2)
 args = parser.parse_args()
 task = args.task
 num_episodes = args.num_episodes
 
 cfg = TASK_CONFIG
-robot = ROBOT_TYPE
+robot = ROBOT_TYPE # xarm6
 
 data_path = os.path.join(config['device_settings']["data_dir"], "dataset" ,str(task))
 os.makedirs(data_path, exist_ok=True)
@@ -119,7 +119,7 @@ def trajectory_callback(msg):
 def write_video():
     frame_index = 0
     previous_progress = 0  # Keep track of the last progress value
-    pbar = tqdm(total=cfg['episode_len'], desc='Processing Frames')
+    pbar = tqdm(total=cfg['episode_len'], desc='Processing Frames') # 180
 
     while not rospy.is_shutdown():
         with buffer_lock:
@@ -180,8 +180,8 @@ if __name__ == "__main__":
     # Initialize subscribers
     start_time = 0
     cv_bridge = CvBridge()
-    video_subscriber = rospy.Subscriber(config['task_config']['ros']['video_topic'], Image, video_callback, queue_size=config['task_config']['ros']['queue_size'])
-    trajectory_subscriber = rospy.Subscriber(config['task_config']['ros']['trajectory_topic'], Odometry, trajectory_callback, queue_size=config['task_config']['ros']['queue_size'])
+    video_subscriber = rospy.Subscriber(config['task_config']['ros']['video_topic'], Image, video_callback, queue_size=config['task_config']['ros']['queue_size']) # /usb_cam/image_raw, 1000 
+    trajectory_subscriber = rospy.Subscriber(config['task_config']['ros']['trajectory_topic'], Odometry, trajectory_callback, queue_size=config['task_config']['ros']['queue_size']) # /camera/odom/sample, 1000
 
     # Initialize frame timestamp file
     with open(FRAME_TIMESTAMP_PATH_TEMP, "a", newline='') as frame_timestamp_file:
