@@ -110,8 +110,8 @@ def normalize_and_save_base_tcp_hdf5(args):
 
             for i in range(normalized_qpos.shape[0]):
                 x, y, z, qx, qy, qz, qw = normalized_qpos[i, 0:7]
-                x -= config["offset"]["x"]
-                z += config["offset"]["z"]
+                x -= config["offset"]["x"]      # t265 -> tcp
+                z += config["offset"]["z"]      # t265 -> tcp
 
                 x_base, y_base, z_base, qx_base, qy_base, qz_base, qw_base, _, _, _ = transform_to_base_quat(x, y, z, qx, qy, qz, qw, T_base_to_local)
                 ori = R.from_quat([qx_base, qy_base, qz_base, qw_base]).as_matrix()
@@ -153,8 +153,8 @@ def normalize_and_save_base_tcp_hdf5(args):
         print(f"Error processing {input_file}: {e}")
 
 if __name__ == "__main__":
-    input_dir = config["input_dir"]
-    output_dir = config["output_tcp_dir"]
+    input_dir = config["input_dir"]  # ./dataset/test
+    output_dir = config["output_tcp_dir"] # ./dataset/test_tcp_with_gripper
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
