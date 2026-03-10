@@ -65,9 +65,9 @@ def process_hdf5_files_in_directory(directory_path, save_dir, task, fps=30):
         save_videos(image_dict, save_dir, task, hdf5_file_name, fps)
 
 # Define input and output directories
-input_directory = 'path to your dataset folder'  # Change this to the folder containing your .hdf5 files
-output_directory = 'path to your output folder'  # Change this to the folder where you want to save the videos
-task = "your task"  # Task name, change this based on your requirements
+input_directory = 'dataset/close_ricecooker_v0'  # Change this to the folder containing your .hdf5 files
+output_directory = 'dataset/output_videos'  # Change this to the folder where you want to save the videos
+task = "close_ricecooker_v0"  # Task name, change this based on your requirements
 
 # Run the batch processing
 process_hdf5_files_in_directory(input_directory, output_directory, task, fps=20)

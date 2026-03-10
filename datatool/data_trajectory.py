@@ -45,7 +45,7 @@ def plot_rotations(qpos):
 
 
 # Load the data
-dataset_path = 'path to your hdf5'  # Change this to the actual path
+dataset_path = 'dataset/close_ricecooker_v0/episode_1.hdf5'  # Change this to the actual path
 qpos = load_hdf5(dataset_path)
 
 # Visualize the trajectory

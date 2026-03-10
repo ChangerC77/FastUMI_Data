@@ -35,7 +35,7 @@ if torch.cuda.is_available():
 else:
     device = 'cpu'
 
-ROBOT_TYPE = config['device_settings']["robot_type"]
+ROBOT_TYPE = config['device_settings']["robot_type"] # XARM6
 TASK_CONFIG = config['task_config']
 
 
@@ -45,30 +45,31 @@ parser.add_argument('--task', type=str, default="test3")  # open_lid, open_fridg
 parser.add_argument('--num_episodes', type=int, default=2)
 args = parser.parse_args()
 task = args.task
-num_episodes = args.num_episodes
+num_episodes = args.num_episodes # 2
 
 cfg = TASK_CONFIG
-robot = ROBOT_TYPE
+robot = ROBOT_TYPE # XARM6
 
-data_path = os.path.join(config['device_settings']["data_dir"], "dataset" ,str(task))
-os.makedirs(data_path, exist_ok=True)
+data_path = os.path.join(config['device_settings']["data_dir"], "dataset" ,str(task)) # "./dataset/test3"
+os.makedirs(data_path, exist_ok=True) # exist_ok=True： 如果目录已经存在，则不会抛出异常；如果目录不存在，则会创建目录。
 
-IMAGE_PATH = os.path.join(data_path, 'camera/')
+IMAGE_PATH = os.path.join(data_path, 'camera/') # "./dataset/test3/camera/"
 os.makedirs(IMAGE_PATH, exist_ok=True)
 
-CSV_PATH = os.path.join(data_path, 'csv/')
+CSV_PATH = os.path.join(data_path, 'csv/') # "./dataset/test3/csv/"
 os.makedirs(CSV_PATH, exist_ok=True)
 
-STATE_PATH = os.path.join(data_path, 'states.csv')
+# writeCSV files for trajectory and timestamps
+STATE_PATH = os.path.join(data_path, 'states.csv') # "./dataset/test3/csv/states.csv"
 if not os.path.exists(STATE_PATH):
     with open(STATE_PATH, 'w') as csv_file2:
         csv_writer2 = csv.writer(csv_file2)
-        csv_writer2.writerow(['Index', 'Start Time', 'Trajectory Timestamp', 'Frame Timestamp', 'Pos X', 'Pos Y', 'Pos Z', 'Q_X', 'Q_Y', 'Q_Z', 'Q_W'])
+        csv_writer2.writerow(['Index', 'Start Time', 'Trajectory Timestamp', 'Frame Timestamp', 'Pos X', 'Pos Y', 'Pos Z', 'Q_X', 'Q_Y', 'Q_Z', 'Q_W']) # title
 
-VIDEO_PATH_TEMP = os.path.join(data_path, 'camera', 'temp_video_n.mp4')
-TRAJECTORY_PATH_TEMP = os.path.join(data_path, 'csv', 'temp_trajectory.csv')
-TIMESTAMP_PATH_TEMP = os.path.join(data_path, 'csv', 'temp_video_timestamps.csv')
-FRAME_TIMESTAMP_PATH_TEMP = os.path.join(data_path, 'csv', 'frame_timestamps.csv')
+VIDEO_PATH_TEMP = os.path.join(data_path, 'camera', 'temp_video_n.mp4') # "./dataset/test3/camera/temp_video_n.mp4"
+TRAJECTORY_PATH_TEMP = os.path.join(data_path, 'csv', 'temp_trajectory.csv') # "./dataset/test3/csv/temp_trajectory.csv"
+TIMESTAMP_PATH_TEMP = os.path.join(data_path, 'csv', 'temp_video_timestamps.csv') # "./dataset/test3/csv/temp_video_timestamps.csv"
+FRAME_TIMESTAMP_PATH_TEMP = os.path.join(data_path, 'csv', 'frame_timestamps.csv') # "./dataset/test3/csv/frame_timestamps.csv"
 
 video_subscriber = None
 trajectory_subscriber = None
@@ -77,8 +78,8 @@ trajectory_subscriber = None
 rospy.init_node('video_trajectory_recorder', anonymous=True)
 
 # Video writer parameters for 60 Hz recording
-fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-frame_width, frame_height = cfg['cam_width'], cfg['cam_height']
+fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # .mp4 format
+frame_width, frame_height = cfg['cam_width'], cfg['cam_height'] # 1920，1080
 
 # Buffers for storing incoming data
 video_buffer = deque()
@@ -119,12 +120,12 @@ def trajectory_callback(msg):
 def write_video():
     frame_index = 0
     previous_progress = 0  # Keep track of the last progress value
-    pbar = tqdm(total=cfg['episode_len'], desc='Processing Frames')
+    pbar = tqdm(total=cfg['episode_len'], desc='Processing Frames') # 180
 
     while not rospy.is_shutdown():
         with buffer_lock:
             if video_buffer:
-                frame, timestamp = video_buffer.popleft()
+                frame, timestamp = video_buffer.popleft() # 从队列的左侧（开头）移除并返回一个元素
                 video_writer.write(frame)
 
                 # Write timestamp for each frame to CSV
@@ -132,7 +133,7 @@ def write_video():
                 frame_index += 1
 
                 # Update progress bar
-                current_progress = frame_index // 3
+                current_progress = frame_index // 3 # 每3帧更新一次进度
                 pbar.update(current_progress - previous_progress)
                 previous_progress = current_progress
 
@@ -180,15 +181,16 @@ if __name__ == "__main__":
     # Initialize subscribers
     start_time = 0
     cv_bridge = CvBridge()
-    video_subscriber = rospy.Subscriber(config['task_config']['ros']['video_topic'], Image, video_callback, queue_size=config['task_config']['ros']['queue_size'])
-    trajectory_subscriber = rospy.Subscriber(config['task_config']['ros']['trajectory_topic'], Odometry, trajectory_callback, queue_size=config['task_config']['ros']['queue_size'])
+    video_subscriber = rospy.Subscriber(config['task_config']['ros']['video_topic'], Image, video_callback, queue_size=config['task_config']['ros']['queue_size']) # "/usb_cam/image_raw", 1000
+    trajectory_subscriber = rospy.Subscriber(config['task_config']['ros']['trajectory_topic'], Odometry, trajectory_callback, queue_size=config['task_config']['ros']['queue_size']) # "/camera/odom/sample", 1000
 
     # Initialize frame timestamp file
-    with open(FRAME_TIMESTAMP_PATH_TEMP, "a", newline='') as frame_timestamp_file:
+    with open(FRAME_TIMESTAMP_PATH_TEMP, "a", newline='') as frame_timestamp_file: # FRAME_TIMESTAMP_PATH_TEMP: "./dataset/test3/csv/frame_timestamps.csv"
         frame_timestamp_writer = csv.writer(frame_timestamp_file)
         frame_timestamp_writer.writerow(['Episode Index', 'Timestamp'])
 
-        for episode in range(num_episodes):
+        for episode in range(num_episodes): # num_episodes: 2
+            # VIDEO_PATH_TEMP "./dataset/test3/camera/temp_video_n.mp4" -> "./dataset/test3/camera/temp_video_0.mp4"
             video_writer = cv2.VideoWriter(VIDEO_PATH_TEMP.replace("_n", f"_{episode}"), fourcc, 60, (frame_width, frame_height))
 
             # CSV for trajectory data and video timestamps
@@ -202,11 +204,12 @@ if __name__ == "__main__":
                 trajectory_writer.writerow(['Timestamp', 'Pos X', 'Pos Y', 'Pos Z', 'Q_X', 'Q_Y', 'Q_Z', 'Q_W'])
                 timestamp_writer.writerow(['Frame Index', 'Timestamp'])
 
+                # time to start
                 first_time_judger = False
-
                 input(f"Episode {episode + 1}/{num_episodes} ready. Press Enter to start...")
                 start_time = rospy.Time.now().to_sec()  # Start time
                 first_time_judger = True
+                
                 print(f"Episode {episode + 1}/{num_episodes} started!")
 
                 # Initialize buffers
@@ -228,13 +231,15 @@ if __name__ == "__main__":
                         '/observations/qpos': [],
                         '/action': [],
                     }
-                    for cam_name in cfg['camera_names']:
+                    for cam_name in cfg['camera_names']: # front
                         data_dict[f'/observations/images/{cam_name}'] = []
                     timestamp_file.close()
                     timestamps = pd.read_csv(TIMESTAMP_PATH_TEMP)
-                    downsampled_timestamps = timestamps.iloc[::3].reset_index(drop=True)
-                    cap = cv2.VideoCapture(VIDEO_PATH_TEMP.replace("_n", f"_{episode}"))
+                    # downsample timestamps to match 20 Hz (every 3rd frame from 60 Hz)
+                    downsampled_timestamps = timestamps.iloc[::3].reset_index(drop=True) # reset_index() - 重置索引 drop=True: 丢弃原索引
+                    cap = cv2.VideoCapture(VIDEO_PATH_TEMP.replace("_n", f"_{episode}")) # "./dataset/test3/camera/temp_video_n.mp4" -> "./dataset/test3/camera/temp_video_0.mp4"
 
+                    # 视频后处理中的关键帧提取阶段，从降采样后的视频中提取特定帧保存为图片
                     for idx, row in tqdm(downsampled_timestamps.iterrows(), desc='Extracting Images'):
                         frame_idx = row['Frame Index']
                         cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
@@ -249,11 +254,11 @@ if __name__ == "__main__":
 
                     # Process trajectory data
                     trajectory = pd.read_csv(TRAJECTORY_PATH_TEMP)
-                    trajectory['Timestamp'] = trajectory['Timestamp'].astype(float)
+                    trajectory['Timestamp'] = trajectory['Timestamp'].astype(float) # 确保时间戳为浮点数，便于计算
 
-                    for idx, row in tqdm(downsampled_timestamps.iterrows(), desc='Extracting States'):
-                        closest_idx = (np.abs(trajectory['Timestamp'] - row['Timestamp'])).argmin()
-                        closest_row = trajectory.iloc[closest_idx]
+                    for idx, row in tqdm(downsampled_timestamps.iterrows(), desc='Extracting States'): # 每一行对应一个要提取的视频帧
+                        closest_idx = (np.abs(trajectory['Timestamp'] - row['Timestamp'])).argmin() # 找到最小时间差的索引
+                        closest_row = trajectory.iloc[closest_idx] # 获取最接近的状态数据行
                         pos_quat = [
                             closest_row['Pos X'], closest_row['Pos Y'], closest_row['Pos Z'],
                             closest_row['Q_X'], closest_row['Q_Y'], closest_row['Q_Z'], closest_row['Q_W']

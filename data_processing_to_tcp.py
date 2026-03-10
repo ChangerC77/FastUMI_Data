@@ -171,7 +171,7 @@ if __name__ == "__main__":
 
     print("Starting parallel processing...")
 
-    num_processes = cpu_count()
+    num_processes = cpu_count() # 使用所有CPU核心
     with Pool(num_processes) as pool:
         list(
             tqdm(pool.imap_unordered(normalize_and_save_base_tcp_hdf5, args_list),
